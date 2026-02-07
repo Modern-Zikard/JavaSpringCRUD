@@ -1,8 +1,11 @@
 package com.example.springapi.service;
 
+
+import com.example.springapi.dto.RegisterUserRequest;
 import com.example.springapi.models.User;
 import com.example.springapi.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,13 +15,17 @@ import java.util.List;
 public class UserService
 {
     private final UserRepository repo;
-    public UserService(UserRepository repo)
+    private final PasswordEncoder passEncoder;
+
+    public UserService(UserRepository repo, PasswordEncoder passEncoder)
     {
         this.repo = repo;
+        this.passEncoder = passEncoder;
     }
-    public User Create(String username)
+    public User register(RegisterUserRequest dto)
     {
-        return repo.save(new User(username));
+        String PassHash = passEncoder.encode(dto.password());
+        return repo.save(new User(dto.email(), PassHash, dto.username()));
     }
 
     public User getById(Long id)

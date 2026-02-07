@@ -12,19 +12,23 @@ public class User
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
+
+    private String email;
     private String username;
+    private String PassHash;
 
     public User(){}
-    public User(String username)
+    public User(String email, String PassHash, String username)
     {
+        this.email = email;
+        this.PassHash = PassHash;
         this.username = username;
-
     }
 
 
-    public static User createUser(String username, Long id)
+    public static User register(String email, String PassHash, String username)
     {
-        return new User(username);
+        return new User(email, PassHash, username);
     }
 
     public String GetUsername()

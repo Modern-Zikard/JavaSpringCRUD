@@ -1,10 +1,12 @@
 package com.example.springapi.controllers;
 
 import com.example.springapi.dto.DeleteResponse;
+import com.example.springapi.dto.RegisterUserRequest;
 import com.example.springapi.dto.UserRequest;
 import com.example.springapi.dto.UserResponse;
 import com.example.springapi.models.User;
 import com.example.springapi.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,10 +24,10 @@ public class UserController
         this.service = service;
     }
 
-    @PostMapping
-    public UserResponse create(@RequestBody UserRequest req)
+    @PostMapping("/register")
+    public UserResponse register(@Valid @RequestBody RegisterUserRequest req)
     {
-        User user = service.Create(req.username());
+        User user = service.register(req);
         return new UserResponse(user.GetId(),user.GetUsername());
     }
 
