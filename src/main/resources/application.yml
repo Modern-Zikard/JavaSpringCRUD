@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/testdb
+    username: testuser
+    password: testpassword
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+logging:
+  file:
+    name: logs/application.log    # основной лог приложения
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG       # включаем SQL логи
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE # для значений параметров
