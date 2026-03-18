@@ -1,6 +1,7 @@
 package com.example.springapi.user.service;
 
 
+import com.example.springapi.user.models.Role;
 import com.example.springapi.user.models.User;
 import com.example.springapi.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -20,6 +21,7 @@ public class UserService
     }
     public User createUser(User user)
     {
+        user.setRole(Role.USER);
         return repo.save(user);
     }
     public User getByEmail(String email) {return repo.findByEmail(email).orElseThrow(()->new RuntimeException("User not found"));}

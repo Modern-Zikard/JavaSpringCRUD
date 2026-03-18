@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.example.springapi.auth.exception.AuthException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.example.springapi.auth.jwt.service.JwtService;
 
 @Service
 @Transactional
@@ -17,10 +18,12 @@ import org.springframework.stereotype.Service;
 public class AuthService
 {
     private final UserService userService;
+    private final JwtService jwtService;
     private final PasswordEncoder passEncoder;
-    public AuthService(UserService userService, PasswordEncoder passEncoder)
+    public AuthService(UserService userService, JwtService jwtService, PasswordEncoder passEncoder)
     {
         this.userService = userService;
+        this.jwtService = jwtService;
         this.passEncoder = passEncoder;
     }
     public User register(RegisterUserRequest dto)
@@ -40,6 +43,7 @@ public class AuthService
             }
             String passHash = passEncoder.encode(dto.password());
             User user = new User(dto.email(),passHash, dto.username());
+
             User createdUser = userService.createUser(user);
 
             log.info("User registered successfully: id={}, email={}", createdUser.getId(),createdUser.getEmail());
@@ -65,7 +69,7 @@ public class AuthService
 
         }
         log.info("Password verified for userId={}", user.getId());
-        return "Login success";
+        return jwtService.generationToken(user);
 
     }
 }
