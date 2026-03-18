@@ -25,17 +25,46 @@ public class AuthService
     }
     public User register(RegisterUserRequest dto)
     {
-        String passHash = passEncoder.encode(dto.password());
-        User user = new User(dto.email(),passHash, dto.username());
-        return userService.createUser(user);
+        log.info("Registration attempt for email={}, username={}", dto.email(), dto.username());
+        try
+        {
+            if(userService.existsByUsername(dto.username()))
+            {
+                log.info("Registration failed, username={} already exists", dto.username());
+                throw new AuthException("Username already exists");
+            }
+            if(userService.existsByEmail(dto.email()))
+            {
+                log.info("Registration failed, email={} already exists", dto.email());
+                throw new AuthException("Email already exists");
+            }
+            String passHash = passEncoder.encode(dto.password());
+            User user = new User(dto.email(),passHash, dto.username());
+            User createdUser = userService.createUser(user);
+
+            log.info("User registered successfully: id={}, email={}", createdUser.getId(),createdUser.getEmail());
+            return createdUser;
+
+        }
+        catch(Exception e)
+        {
+            log.error("Registration failed for email={}, username={}",dto.email(),dto.username());
+            throw e;
+
+        }
+
+
+
     }
     public String login(LoginUserRequest dto)
     {
         User user = userService.getByEmail(dto.email());
         if(!passEncoder.matches(dto.password(),user.getPassHash())) {
+            log.warn("Password mismatch for userId={}", user.getId());
             throw new AuthException("Invalid credentials");
 
         }
+        log.info("Password verified for userId={}", user.getId());
         return "Login success";
 
     }

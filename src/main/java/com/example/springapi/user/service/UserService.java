@@ -22,14 +22,16 @@ public class UserService
     {
         return repo.save(user);
     }
-    public User getByEmail(String email)
-    {
-        return repo.findByEmail(email).orElseThrow(()->new RuntimeException("User not found"));
-    }
+    public User getByEmail(String email) {return repo.findByEmail(email).orElseThrow(()->new RuntimeException("User not found"));}
     public User getById(Long id)
     {
         return repo.findById(id).orElseThrow(()->new RuntimeException("User not found"));
     }
+    public User getByUsername(String username) {return repo.findByUsername(username).orElseThrow(()->new RuntimeException("User not found"));}
+
+    public boolean existsByUsername(String username){ return repo.existsByUsername(username);}
+    public boolean existsByEmail(String email){ return repo.existsByEmail(email);}
+    public boolean existsById(Long id){ return repo.existsById(id);}
 
     public List<User> getAll()
     {

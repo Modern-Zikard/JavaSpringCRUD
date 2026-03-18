@@ -25,22 +25,11 @@ public class User
         this.username = username;
     }
 
-    public String getPassHash() { return passHash;}
-    public String getUsername()
-    {
-        return username;
-    }
-    public Long getId()
-    {
-        return id;
-    }
+    public String getEmail(){return this.email;}
+    public String getPassHash() { return this.passHash;}
+    public String getUsername() { return this.username;}
+    public Long getId() {return this.id;}
 
-    public void setUsername(String username)
-    {
-        this.username = username;
-    }
-    public void setId(Long id)
-    {
-        this.id = id;
-    }
+    public void setUsername(String username) {this.username = username;}
+    public void setId(Long id) {this.id = id;}
 }

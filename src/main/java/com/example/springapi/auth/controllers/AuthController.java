@@ -5,8 +5,11 @@ import com.example.springapi.auth.dto.RegisterUserRequest;
 import com.example.springapi.user.dto.UserResponse;
 import com.example.springapi.user.models.User;
 import com.example.springapi.auth.service.AuthService;
+import com.example.springapi.auth.exception.AuthException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,13 +28,13 @@ public class AuthController
     }
 
     @PostMapping("/register")
-    public UserResponse register(@Valid @RequestBody RegisterUserRequest req)
+    public UserResponse register(@Valid @RequestBody RegisterUserRequest dto)
     {
         log.info("POST /auth/register called");
         try
         {
 
-            User user = service.register(req);
+            User user = service.register(dto);
             log.info("POST /auth/register succeeded for username={}", user.getUsername());
             return new UserResponse(user.getId(),user.getUsername());
         }
@@ -45,10 +48,21 @@ public class AuthController
     }
 
     @PostMapping("/login")
-    public String login(@Valid @RequestBody LoginUserRequest req)
+    public ResponseEntity<String> login(@Valid @RequestBody LoginUserRequest dto)
     {
         log.info("POST /auth/login called");
-        return service.login(req);
+        try
+        {
+            String result = service.login(dto);
+            return ResponseEntity.ok(result);
+
+        }
+        catch(AuthException e)
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+
+        }
+
     }
 
 
