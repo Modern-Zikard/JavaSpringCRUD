@@ -1,4 +1,4 @@
-package com.example.springapi.dto;
+package com.example.springapi.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

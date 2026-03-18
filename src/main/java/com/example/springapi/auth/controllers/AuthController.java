@@ -1,9 +1,10 @@
-package com.example.springapi.controllers;
+package com.example.springapi.auth.controllers;
 
-import com.example.springapi.dto.RegisterUserRequest;
-import com.example.springapi.dto.UserResponse;
-import com.example.springapi.models.User;
-import com.example.springapi.service.UserService;
+import com.example.springapi.auth.dto.LoginUserRequest;
+import com.example.springapi.auth.dto.RegisterUserRequest;
+import com.example.springapi.user.dto.UserResponse;
+import com.example.springapi.user.models.User;
+import com.example.springapi.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class AuthController
 {
-    private final UserService service;
-    public AuthController(UserService service)
+    private final AuthService service;
+    public AuthController(AuthService service)
     {
         this.service = service;
     }
@@ -31,8 +32,8 @@ public class AuthController
         {
 
             User user = service.register(req);
-            log.info("POST /auth/register succeeded for username={}", user.GetUsername());
-            return new UserResponse(user.GetId(),user.GetUsername());
+            log.info("POST /auth/register succeeded for username={}", user.getUsername());
+            return new UserResponse(user.getId(),user.getUsername());
         }
         catch(Exception e)
         {
@@ -41,6 +42,13 @@ public class AuthController
 
         }
 
+    }
+
+    @PostMapping("/login")
+    public String login(@Valid @RequestBody LoginUserRequest req)
+    {
+        log.info("POST /auth/login called");
+        return service.login(req);
     }
 
 

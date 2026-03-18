@@ -1,4 +1,4 @@
-package com.example.springapi.models;
+package com.example.springapi.user.models;
 
 
 import jakarta.persistence.*;
@@ -15,36 +15,31 @@ public class User
 
     private String email;
     private String username;
-    private String PassHash;
+    private String passHash;
 
     public User(){}
-    public User(String email, String PassHash, String username)
+    public User(String email, String passHash, String username)
     {
         this.email = email;
-        this.PassHash = PassHash;
+        this.passHash = passHash;
         this.username = username;
     }
 
-
-    public static User register(String email, String PassHash, String username)
-    {
-        return new User(email, PassHash, username);
-    }
-
-    public String GetUsername()
+    public String getPassHash() { return passHash;}
+    public String getUsername()
     {
         return username;
     }
-    public Long GetId()
+    public Long getId()
     {
         return id;
     }
 
-    public void SetUsername(String username)
+    public void setUsername(String username)
     {
         this.username = username;
     }
-    public void SetId(Long id)
+    public void setId(Long id)
     {
         this.id = id;
     }

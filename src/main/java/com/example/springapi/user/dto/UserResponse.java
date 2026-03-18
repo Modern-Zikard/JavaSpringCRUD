@@ -1,4 +1,4 @@
-package com.example.springapi.dto;
+package com.example.springapi.user.dto;
 
 public record UserResponse(Long id, String username){}
 

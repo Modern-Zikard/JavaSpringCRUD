@@ -1,11 +1,9 @@
-package com.example.springapi.service;
+package com.example.springapi.user.service;
 
 
-import com.example.springapi.dto.RegisterUserRequest;
-import com.example.springapi.models.User;
-import com.example.springapi.repository.UserRepository;
+import com.example.springapi.user.models.User;
+import com.example.springapi.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,19 +13,19 @@ import java.util.List;
 public class UserService
 {
     private final UserRepository repo;
-    private final PasswordEncoder passEncoder;
 
-    public UserService(UserRepository repo, PasswordEncoder passEncoder)
+    public UserService(UserRepository repo)
     {
         this.repo = repo;
-        this.passEncoder = passEncoder;
     }
-    public User register(RegisterUserRequest dto)
+    public User createUser(User user)
     {
-        String PassHash = passEncoder.encode(dto.password());
-        return repo.save(new User(dto.email(), PassHash, dto.username()));
+        return repo.save(user);
     }
-
+    public User getByEmail(String email)
+    {
+        return repo.findByEmail(email).orElseThrow(()->new RuntimeException("User not found"));
+    }
     public User getById(Long id)
     {
         return repo.findById(id).orElseThrow(()->new RuntimeException("User not found"));
