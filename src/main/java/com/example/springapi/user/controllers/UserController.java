@@ -59,21 +59,7 @@ public class UserController
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<DeleteResponse> delete(@PathVariable Long id)
-    {
-        log.info("DELETE /users/{} called", id);
-        boolean deleted = service.delete(id);
 
-        if(deleted)
-        {
-            return ResponseEntity.ok(new DeleteResponse("User deleted successfully"));
-        }
-        else
-        {
-            return ResponseEntity.status(404).body(new DeleteResponse("User not found"));
-        }
-    }
 
 
 
