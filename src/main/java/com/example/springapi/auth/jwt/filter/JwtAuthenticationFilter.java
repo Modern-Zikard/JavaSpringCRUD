@@ -1,8 +1,10 @@
 package com.example.springapi.auth.jwt.filter;
 
 import com.example.springapi.auth.jwt.service.JwtService;
+import com.example.springapi.auth.principal.UserPrincipal;
 import com.example.springapi.user.models.User;
 import com.example.springapi.user.service.UserService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,40 +40,62 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException
     {
         String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String email = null;
 
-        if(authHeader != null && authHeader.startsWith("Bearer "))
+        if(authHeader == null || !authHeader.startsWith("Bearer "))
         {
-            token = authHeader.substring(7);
-            try
+            filterChain.doFilter(request,response);
+            return;
+        }
+
+        String token = authHeader.substring(7);
+
+        try
+        {
+            Claims claims = jwtService.extractAllClaims(token);
+
+            String email = claims.getSubject();
+            String username = claims.get("username", String.class);
+            String role = claims.get("role", String.class);
+
+            Number idNumber = claims.get("userId",Number.class);
+            Long userId = idNumber.longValue();
+
+            if(email != null && SecurityContextHolder.getContext().getAuthentication() == null)
             {
-                email = jwtService.extractEmail(token);
-            }
-            catch(Exception e)
-            {
-                log.warn("Failed to extract email from token: {}", e.getMessage());
+                User user = userService.getById(userId);
+                if(user!= null && jwtService.isTokenValid(token, user))
+                {
+                    UserPrincipal userPrincipal = new UserPrincipal(
+                            userId,
+                            email,
+                            username
+                    );
+                    List<SimpleGrantedAuthority> authorities = List.of(
+                            new SimpleGrantedAuthority("ROLE_" + role)
+                    );
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userPrincipal,
+                                    null,
+                                    authorities
+                            );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.info("JWT valid for userId = {}", userId);
+                    log.info("ROLE FROM TOKEN = {}", role);
+                }
 
             }
         }
-        if(email != null && SecurityContextHolder.getContext().getAuthentication() == null)
+        catch(Exception e)
         {
-            User user = userService.getByEmail(email);
-            if(user != null && jwtService.isTokenValid(token, user))
-            {
-                String role = jwtService.extractRole(token);
-                List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_"+role));
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        user,
-                        null,
-                        authorities
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                log.info("JWT token valid for userId={}",user.getId());
-            }
+            log.warn("JWT processing failed: {}", e.getMessage());
 
         }
+
+
         filterChain.doFilter(request, response);
     }
 }

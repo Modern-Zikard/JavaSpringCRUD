@@ -68,7 +68,7 @@ public class JwtService
         return extractAllClaims(token).getExpiration().before(new Date());
     }
 
-    private Claims extractAllClaims(String token)
+    public Claims extractAllClaims(String token)
     {
         try
         {
