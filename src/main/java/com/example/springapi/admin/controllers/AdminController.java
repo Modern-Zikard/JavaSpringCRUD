@@ -17,65 +17,49 @@ import java.util.List;
 @Slf4j
 public class AdminController
 {
-    private final UserService service;
+    private final UserService userService;
 
     public AdminController(UserService service)
     {
-        this.service = service;
+        this.userService = service;
     }
+
     @DeleteMapping("/users/{id}")
     public ResponseEntity<DeleteResponse> delete(@PathVariable Long id)
     {
-        log.info("DELETE /users/{} called", id);
-        boolean deleted = service.delete(id);
+        log.info("DELETE /admin/users/{} called", id);
+        userService.delete(id);
+        return ResponseEntity.ok(new DeleteResponse("User deleted successfully"));
 
-        if(deleted)
-        {
-            return ResponseEntity.ok(new DeleteResponse("User deleted successfully"));
-        }
-        else
-        {
-            return ResponseEntity.status(404).body(new DeleteResponse("User not found"));
-        }
     }
     @GetMapping("/users/{id}")
-    public UserResponse getById(@PathVariable Long id)
+    public UserDto getById(@PathVariable Long id)
     {
-        log.info("GET /users/{} called", id);
-        try
-        {
-            User user = service.getById(id);
-            log.info("GET /users/{} succeeded", id);
-            return new UserResponse(user.getId(), user.getUsername());
-        }
-        catch(Exception e)
-        {
-            log.error("GET /users/{} failed: {}", id, e.getMessage());
-            throw e;
+        log.info("GET /admin/users/{} called", id);
 
-        }
+        UserDto userDto = userService.getUserDtoById(id);
+
+        log.info("GET /admin/users/{} secceeded", id);
+        return userDto;
     }
 
     @GetMapping("/users")
-    public List<UserResponse> getAll()
+    public List<UserDto> getAll()
     {
-        log.info("GET /users called");
-        try
-        {   log.info("GET /users succeeded");
-            return service.getAll().stream().map(u -> new UserResponse(u.getId(), u.getUsername())).toList();
-        }
-        catch(Exception e)
-        {
-            log.error("GET /users failed: {}", e.getMessage());
-            throw e;
+        log.info("GET /admin/users called");
+        List<UserDto> users = userService.getAll();
+        log.info("GET /admin/users succeeded, count={}", users.size());
+        return users;
 
-        }
     }
 
     @PatchMapping("/users/patch={id}")
-    public ResponseEntity<UserDto> patchUser(@PathVariable Long id, @RequestBody UserPatchDto dto)
+    public UserDto patchUser(@PathVariable Long id, @RequestBody UserPatchDto dto)
     {
-        return ResponseEntity.ok(service.patchUser(id, dto));
+        log.info("PATCH /admin/users/patch={} called", id);
+        UserDto updated = userService.patchUser(id, dto);
+        log.info("PATCH /admin/users/patch={} succeeded", id);
+        return updated;
     }
 
 

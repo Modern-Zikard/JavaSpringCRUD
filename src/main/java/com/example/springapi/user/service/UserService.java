@@ -1,6 +1,8 @@
 package com.example.springapi.user.service;
 
 
+import com.example.springapi.auth.dto.RegisterUserRequest;
+import com.example.springapi.auth.exception.UserNotFoundException;
 import com.example.springapi.user.dto.UserDto;
 import com.example.springapi.user.dto.UserPatchDto;
 import com.example.springapi.user.models.Role;
@@ -8,6 +10,7 @@ import com.example.springapi.user.models.User;
 import com.example.springapi.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,15 +32,38 @@ public class UserService
         return repo.save(user);
     }
 
-    public User updateUser(Long id, User updatedData)
+    public boolean existsByUsername(String username){ return repo.existsByUsername(username);}
+    public boolean existsByEmail(String email){ return repo.existsByEmail(email);}
+    public boolean existsById(Long id){ return repo.existsById(id);}
+
+    public User getUserByEmail(String email)
+    {
+        return repo.findByEmail(email).orElseThrow(()->new RuntimeException("User not found"));
+    }
+    public User getUserById(Long id)
+    {
+        return repo.findById(id).orElseThrow(()->new RuntimeException("User not found"));
+    }
+    public User getUserByUsername(String username)
+    {
+        return repo.findByUsername(username).orElseThrow(()->new RuntimeException("User not found"));
+    }
+
+    public UserDto updateUser(Long id, UserDto updatedData)
     {
         User existingUser = repo.findById(id).orElseThrow(()->new RuntimeException("User not found"));
 
-        existingUser.setUsername(updatedData.getUsername());
-        existingUser.setRole(updatedData.getRole());
-        existingUser.setEmail(updatedData.getEmail());
+        existingUser.setUsername(updatedData.username());
+        existingUser.setRole(Role.fromString(updatedData.role()));
+        existingUser.setEmail(updatedData.email());
+        repo.save(existingUser);
 
-        return repo.save(existingUser);
+        return new UserDto(
+                existingUser.getId(),
+                existingUser.getUsername(),
+                existingUser.getEmail(),
+                existingUser.getRole().toString()
+        );
     }
 
     public UserDto patchUser(Long id, UserPatchDto dto)
@@ -60,27 +86,49 @@ public class UserService
         );
     }
 
-    public User getByEmail(String email) {return repo.findByEmail(email).orElseThrow(()->new RuntimeException("User not found"));}
-    public User getById(Long id)
+    public UserDto getUserDtoByEmail(String email)
     {
-        return repo.findById(id).orElseThrow(()->new RuntimeException("User not found"));
-    }
-    public User getByUsername(String username) {return repo.findByUsername(username).orElseThrow(()->new RuntimeException("User not found"));}
-
-    public boolean existsByUsername(String username){ return repo.existsByUsername(username);}
-    public boolean existsByEmail(String email){ return repo.existsByEmail(email);}
-    public boolean existsById(Long id){ return repo.existsById(id);}
-
-    public List<User> getAll()
-    {
-        return repo.findAll();
+        User user = repo.findByEmail(email).orElseThrow(()->new RuntimeException("User not found"));
+        return new UserDto(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().toString()
+        );
     }
 
-    public boolean delete(Long id) {
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
-            return true;
+    public UserDto getUserDtoById(Long id)
+    {
+        User user = repo.findById(id).orElseThrow(()->new RuntimeException("User not found"));
+        return new UserDto(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().toString()
+        );
+    }
+
+    public UserDto getUserDtoByUsername(String username)
+    {
+        User user = repo.findByUsername(username).orElseThrow(()->new RuntimeException("User not found"));
+        return new UserDto(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().toString()
+        );
+    }
+
+    public List<UserDto> getAll()
+    {
+        return repo.findAll().stream().map(u -> new UserDto(u.getId(), u.getUsername(), u.getEmail(), u.getRole().toString())).toList();
+    }
+
+    public void delete(Long id) {
+        if(!repo.existsById(id))
+        {
+            throw new UserNotFoundException("User not found with id = " + id);
         }
-        return false;
+        repo.deleteById(id);
     }
 }

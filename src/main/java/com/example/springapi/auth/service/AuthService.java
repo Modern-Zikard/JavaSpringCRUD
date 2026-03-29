@@ -3,6 +3,7 @@ package com.example.springapi.auth.service;
 
 import com.example.springapi.auth.dto.LoginUserRequest;
 import com.example.springapi.auth.dto.RegisterUserRequest;
+import com.example.springapi.user.dto.UserDto;
 import com.example.springapi.user.models.User;
 import com.example.springapi.user.service.UserService;
 import jakarta.transaction.Transactional;
@@ -26,7 +27,7 @@ public class AuthService
         this.jwtService = jwtService;
         this.passEncoder = passEncoder;
     }
-    public User register(RegisterUserRequest dto)
+    public UserDto register(RegisterUserRequest dto)
     {
         log.info("Registration attempt for email={}, username={}", dto.email(), dto.username());
         try
@@ -47,7 +48,12 @@ public class AuthService
             User createdUser = userService.createUser(user);
 
             log.info("User registered successfully: id={}, email={}", createdUser.getId(),createdUser.getEmail());
-            return createdUser;
+            return new UserDto(
+                    createdUser.getId(),
+                    createdUser.getUsername(),
+                    createdUser.getEmail(),
+                    createdUser.getRole().toString()
+            );
 
         }
         catch(Exception e)
@@ -62,7 +68,7 @@ public class AuthService
     }
     public String login(LoginUserRequest dto)
     {
-        User user = userService.getByEmail(dto.email());
+        User user = userService.getUserByEmail(dto.email());
         if(!passEncoder.matches(dto.password(),user.getPassHash())) {
             log.warn("Password mismatch for userId={}", user.getId());
             throw new AuthException("Invalid credentials");

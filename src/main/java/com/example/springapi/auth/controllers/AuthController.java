@@ -1,7 +1,9 @@
 package com.example.springapi.auth.controllers;
 
 import com.example.springapi.auth.dto.LoginUserRequest;
+import com.example.springapi.auth.dto.LoginUserResponse;
 import com.example.springapi.auth.dto.RegisterUserRequest;
+import com.example.springapi.user.dto.UserDto;
 import com.example.springapi.user.dto.UserResponse;
 import com.example.springapi.user.models.User;
 import com.example.springapi.auth.service.AuthService;
@@ -21,48 +23,28 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class AuthController
 {
-    private final AuthService service;
-    public AuthController(AuthService service)
+    private final AuthService authService;
+    public AuthController(AuthService authService)
     {
-        this.service = service;
+        this.authService = authService;
     }
 
     @PostMapping("/register")
-    public UserResponse register(@Valid @RequestBody RegisterUserRequest dto)
+    public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterUserRequest dto)
     {
-        log.info("POST /auth/register called");
-        try
-        {
-
-            User user = service.register(dto);
-            log.info("POST /auth/register succeeded for username={}", user.getUsername());
-            return new UserResponse(user.getId(),user.getUsername());
-        }
-        catch(Exception e)
-        {
-            log.error("POST /auth/register failed: {}", e.getMessage());
-            throw e;
-
-        }
-
+        log.info("POST /auth/register called for username={}", dto.username());
+        UserDto user  =  authService.register(dto);
+        log.info("Register succeeded for username={}", dto.username());
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginUserRequest dto)
+    public LoginUserResponse login(@Valid @RequestBody LoginUserRequest dto)
     {
-        log.info("POST /auth/login called");
-        try
-        {
-            String result = service.login(dto);
-            return ResponseEntity.ok(result);
-
-        }
-        catch(AuthException e)
-        {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-
-        }
-
+        log.info("POST /auth/login called for email = {}", dto.email());
+        String token = authService.login(dto);
+        log.info("Login succeeded for email = {}", dto.email());
+        return new LoginUserResponse(token);
     }
 
 
